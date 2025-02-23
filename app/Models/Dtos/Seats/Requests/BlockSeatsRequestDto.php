@@ -1,22 +1,19 @@
 <?php
 
-namespace App\Models\DTOs\Reservations\Requests;
+namespace App\Models\DTOs\Seats\Requests;
 
-class CreateReservationRequestDto
+class BlockSeatsRequestDto
 {
     /**
-     * @param int $event_id
      * @param int[] $seat_ids
      */
     public function __construct(
-        public readonly int $event_id,
         public readonly array $seat_ids
     ) {}
 
     public static function fromRequest(array $data): self
     {
         return new self(
-            event_id: $data['event_id'],
             seat_ids: $data['seat_ids']
         );
     }
@@ -24,7 +21,6 @@ class CreateReservationRequestDto
     public function toArray(): array
     {
         return [
-            'event_id' => $this->event_id,
             'seat_ids' => $this->seat_ids
         ];
     }
@@ -36,9 +32,4 @@ class CreateReservationRequestDto
     {
         return $this->seat_ids;
     }
-
-    public function getEventId(): int
-    {
-        return $this->event_id;
-    }
-}
+} 
