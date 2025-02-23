@@ -3,18 +3,14 @@
 namespace App\Repositories\Concretes;
 
 use App\Models\Entities\Event;
-use App\Repositories\Interfaces\IEventRepository;
+use App\Repositories\Abstracts\IEventRepository;
+use Illuminate\Support\Collection;
 
 class EventRepository implements IEventRepository
 {
     public function create(array $data): Event
     {
         return Event::create($data);
-    }
-
-    public function find(int $id): ?Event
-    {
-        return Event::find($id);
     }
 
     public function update(Event $event, array $data): Event
@@ -28,8 +24,28 @@ class EventRepository implements IEventRepository
         return Event::destroy($id) > 0;
     }
 
-    public function all(): array
+    public function find(int $id): ?Event
     {
-        return Event::all()->toArray();
+        return Event::find($id);
+    }
+
+    public function findWithVenue(int $id): ?Event
+    {
+        return Event::with('venue')->find($id);
+    }
+
+    public function all(): Collection
+    {
+        return Event::all();
+    }
+
+    public function allWithVenue(): Collection
+    {
+        return Event::with('venue')->get();
+    }
+
+    public function findByVenue(int $venueId): Collection
+    {
+        return Event::where('venue_id', $venueId)->get();
     }
 } 

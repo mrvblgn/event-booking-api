@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\DTOs\Auth\Requests\RegisterRequestDto;
-use App\Services\AuthService;
+use App\Services\Abstracts\IAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
     public function __construct(
-        private readonly AuthService $authService
+        private readonly IAuthService $authService
     ) {}
 
     public function register(Request $request): JsonResponse
@@ -50,5 +50,12 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Successfully logged out'
         ]);
+    }
+
+    public function refresh(): JsonResponse
+    {
+        $response = $this->authService->refresh();
+
+        return response()->json($response->toArray());
     }
 } 
