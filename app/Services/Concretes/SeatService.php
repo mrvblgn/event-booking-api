@@ -7,6 +7,8 @@ use App\Models\DTOs\Seats\Responses\SeatResponseDto;
 use App\Repositories\Abstracts\ISeatRepository;
 use App\Services\Abstracts\ISeatService;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class SeatService implements ISeatService
 {
@@ -17,33 +19,48 @@ class SeatService implements ISeatService
     public function getEventSeats(int $eventId): Collection
     {
         $seats = $this->seatRepository->getEventSeats($eventId);
-        return $seats->map(fn($seat) => SeatResponseDto::fromEntity($seat));
+        
+        if ($seats->isEmpty()) {
+            throw new ModelNotFoundException('No seats found for this event');
+        }
+
+        return $seats;
     }
 
     public function getVenueSeats(int $venueId): Collection
     {
         $seats = $this->seatRepository->getVenueSeats($venueId);
-        return $seats->map(fn($seat) => SeatResponseDto::fromEntity($seat));
-    }
-
-    public function blockSeats(array $seatIds): bool
-    {
-        // Önce koltukların müsait olup olmadığını kontrol et
-        $seats = $this->seatRepository->getVenueSeats($venueId);
-        $availableSeats = $seats->filter(fn($seat) => $seat->isAvailable());
-        $availableSeatIds = $availableSeats->pluck('id')->toArray();
-
-        // Bloklanmak istenen tüm koltuklar müsait mi?
-        $unavailableSeats = array_diff($seatIds, $availableSeatIds);
-        if (!empty($unavailableSeats)) {
-            throw new \InvalidArgumentException('Some seats are not available');
+        
+        if ($seats->isEmpty()) {
+            throw new ModelNotFoundException('No seats found for this venue');
         }
 
-        return $this->seatRepository->blockSeats($seatIds);
+        return $seats;
     }
 
-    public function releaseSeats(array $seatIds): bool
+    public function blockSeats(array $seatIds): void
     {
-        return $this->seatRepository->releaseSeats($seatIds);
+        if (empty($seatIds)) {
+            throw new \InvalidArgumentException('No seats selected');
+        }
+
+        $success = $this->seatRepository->blockSeats($seatIds);
+        
+        if (!$success) {
+            throw new \InvalidArgumentException('Failed to block seats');
+        }
+    }
+
+    public function releaseSeats(array $seatIds): void
+    {
+        if (empty($seatIds)) {
+            throw new \InvalidArgumentException('No seats selected');
+        }
+
+        $success = $this->seatRepository->releaseSeats($seatIds);
+        
+        if (!$success) {
+            throw new \InvalidArgumentException('Failed to release seats');
+        }
     }
 } 

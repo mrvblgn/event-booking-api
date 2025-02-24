@@ -2,60 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DTOs\Auth\Requests\RegisterRequestDto;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\LoginRequest;
 use App\Services\Abstracts\IAuthService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private readonly IAuthService $authService
     ) {}
 
-    public function register(Request $request): JsonResponse
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'password_confirmation' => 'required'
-        ]);
-
-        $dto = RegisterRequestDto::fromRequest($request->all());
-        $response = $this->authService->register($dto);
-
-        return response()->json($response->toArray(), 201);
+        $user = $this->authService->register($request->validated());
+        return $this->success($user, 'User registered successfully', 201);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+        $token = $this->authService->login($request->validated());
+        return $this->success(['token' => $token], 'Login successful');
+    }
 
-        $response = $this->authService->login(
-            $request->email,
-            $request->password
-        );
-
-        return response()->json($response->toArray());
+    public function refresh(): JsonResponse
+    {
+        $token = $this->authService->refresh();
+        return $this->success(['token' => $token], 'Token refreshed successfully');
     }
 
     public function logout(): JsonResponse
     {
         $this->authService->logout();
-
-        return response()->json([
-            'message' => 'Successfully logged out'
-        ]);
-    }
-
-    public function refresh(): JsonResponse
-    {
-        $response = $this->authService->refresh();
-
-        return response()->json($response->toArray());
+        return $this->success(null, 'Successfully logged out');
     }
 } 

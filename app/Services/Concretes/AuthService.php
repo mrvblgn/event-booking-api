@@ -2,53 +2,51 @@
 
 namespace App\Services\Concretes;
 
-use App\Models\DTOs\Auth\Requests\RegisterRequestDto;
-use App\Models\DTOs\Auth\Responses\AuthResponseDto;
-use App\Models\DTOs\Auth\Requests\LoginRequestDto;
-use App\Repositories\Interfaces\IAuthRepository;
-use App\Services\Interfaces\IAuthService;
+use App\Services\Abstracts\IAuthService;
+use App\Models\Entities\User;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\AuthenticationException;
 
 class AuthService implements IAuthService
 {
-    public function __construct(
-        private readonly IAuthRepository $authRepository
-    ) {}
-
-    public function register(RegisterRequestDto $dto): AuthResponseDto
+    public function register(array $data): array
     {
-        $user = $this->authRepository->register($dto->toArray());
-        $token = $this->authRepository->createToken($user);
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password'])
+        ]);
 
-        return AuthResponseDto::fromUserAndToken($user, $token);
+        $token = auth()->login($user);
+        return ['user' => $user, 'token' => $token];
     }
 
-    public function login(string $email, string $password): AuthResponseDto
+    public function login(array $credentials): string
     {
-        $dto = new LoginRequestDto($email, $password);
-        $user = $this->authRepository->findByEmail($dto->email);
-
-        if (!$user || !Hash::check($dto->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+        $token = auth()->attempt($credentials);
+        
+        if (!$token) {
+            throw new AuthenticationException('Invalid credentials');
         }
 
-        $token = $this->authRepository->createToken($user);
-        return AuthResponseDto::fromUserAndToken($user, $token);
+        return $token;
+    }
+
+    public function refresh(): string
+    {
+        try {
+            return auth()->refresh();
+        } catch (\Exception $e) {
+            throw new AuthenticationException('Unable to refresh token');
+        }
     }
 
     public function logout(): void
     {
-        $this->authRepository->revokeToken(auth()->user());
-    }
-
-    public function refresh(): AuthResponseDto
-    {
-        $token = auth()->refresh();
-        $user = auth()->user();
-
-        return AuthResponseDto::fromUserAndToken($user, $token);
+        try {
+            auth()->logout();
+        } catch (\Exception $e) {
+            throw new AuthenticationException('Unable to logout');
+        }
     }
 } 

@@ -11,6 +11,8 @@ use App\Services\Abstracts\IReservationService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class ReservationService implements IReservationService
 {
@@ -77,8 +79,13 @@ class ReservationService implements IReservationService
     public function confirmReservation(int $id): bool
     {
         $reservation = $this->reservationRepository->findById($id);
-        if (!$reservation || $reservation->user_id !== Auth::id()) {
-            throw new \InvalidArgumentException('Reservation not found');
+        
+        if (!$reservation) {
+            throw new ModelNotFoundException('Reservation not found');
+        }
+
+        if ($reservation->user_id !== Auth::id()) {
+            throw new AuthorizationException('You are not authorized to confirm this reservation');
         }
 
         if (!$reservation->isPending()) {

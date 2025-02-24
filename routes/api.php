@@ -2,6 +2,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SeatController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\TicketController;
 
 // Event routes
 Route::prefix('events')->group(function () {
@@ -44,5 +45,31 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/{id}', [ReservationController::class, 'show']);
         Route::post('/{id}/confirm', [ReservationController::class, 'confirm']);
         Route::delete('/{id}', [ReservationController::class, 'destroy']);
+    });
+
+    // Ticket routes
+    Route::prefix('tickets')->group(function () {
+        Route::get('/', [TicketController::class, 'index']);
+        Route::get('/{id}', [TicketController::class, 'show']);
+        Route::get('/{id}/download', [TicketController::class, 'download']);
+        Route::post('/{id}/transfer', [TicketController::class, 'transfer']);
+    });
+});
+
+// Genel API rate limit
+Route::middleware(['auth:api', 'throttle:api'])->group(function () {
+    // Normal routes...
+});
+
+// Auth işlemleri için özel limit
+Route::middleware('throttle:auth')->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);
+});
+
+// Bilet işlemleri için özel limit
+Route::middleware(['auth:api', 'throttle:tickets'])->group(function () {
+    Route::prefix('tickets')->group(function () {
+        // Ticket routes...
     });
 }); 

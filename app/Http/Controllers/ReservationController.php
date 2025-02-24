@@ -2,72 +2,48 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateReservationRequest;
 use App\Models\DTOs\Reservations\Requests\CreateReservationRequestDto;
 use App\Services\Abstracts\IReservationService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private readonly IReservationService $reservationService
     ) {}
 
-    public function store(Request $request): JsonResponse
+    public function store(CreateReservationRequest $request): JsonResponse
     {
-        $request->validate([
-            'event_id' => 'required|integer|exists:events,id',
-            'seat_ids' => 'required|array',
-            'seat_ids.*' => 'required|integer|exists:seats,id'
-        ]);
-
-        try {
-            $dto = CreateReservationRequestDto::fromRequest($request->all());
-            $reservation = $this->reservationService->createReservation($dto);
-            
-            return response()->json($reservation, 201);
-        } catch (\InvalidArgumentException $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
-        }
+        $dto = CreateReservationRequestDto::fromRequest($request->validated());
+        $reservation = $this->reservationService->createReservation($dto);
+        return $this->success($reservation, 'Reservation created successfully', 201);
     }
 
     public function index(): JsonResponse
     {
         $reservations = $this->reservationService->getReservations();
-        return response()->json($reservations);
+        return $this->success($reservations, 'Reservations retrieved successfully');
     }
 
     public function show(int $id): JsonResponse
     {
-        try {
-            $reservation = $this->reservationService->getReservation($id);
-            return response()->json($reservation);
-        } catch (\InvalidArgumentException $e) {
-            return response()->json(['message' => $e->getMessage()], 404);
-        }
+        $reservation = $this->reservationService->getReservation($id);
+        return $this->success($reservation, 'Reservation retrieved successfully');
     }
 
     public function confirm(int $id): JsonResponse
     {
-        try {
-            $success = $this->reservationService->confirmReservation($id);
-            return response()->json([
-                'message' => $success ? 'Reservation confirmed' : 'Failed to confirm reservation'
-            ], $success ? 200 : 400);
-        } catch (\InvalidArgumentException $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
-        }
+        $this->reservationService->confirmReservation($id);
+        return $this->success(null, 'Reservation confirmed successfully');
     }
 
     public function destroy(int $id): JsonResponse
     {
-        try {
-            $success = $this->reservationService->cancelReservation($id);
-            return response()->json([
-                'message' => $success ? 'Reservation cancelled' : 'Failed to cancel reservation'
-            ], $success ? 200 : 400);
-        } catch (\InvalidArgumentException $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
-        }
+        $this->reservationService->cancelReservation($id);
+        return $this->success(null, 'Reservation cancelled successfully');
     }
 } 

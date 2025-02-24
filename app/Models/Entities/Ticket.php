@@ -4,12 +4,10 @@ namespace App\Models\Entities;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 
 class Ticket extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'reservation_id',
         'seat_id',
@@ -22,6 +20,15 @@ class Ticket extends Model
     public const STATUS_CANCELLED = 'cancelled';
     public const STATUS_TRANSFERRED = 'transferred';
 
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($ticket) {
+            $ticket->ticket_code = Str::random(10);
+        });
+    }
+
     public function reservation(): BelongsTo
     {
         return $this->belongsTo(Reservation::class);
@@ -32,9 +39,15 @@ class Ticket extends Model
         return $this->belongsTo(Seat::class);
     }
 
-    public function isActive(): bool
+    public function canBeTransferred(): bool
     {
         return $this->status === self::STATUS_ACTIVE;
+    }
+
+    public function canBeCancelled(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE && 
+            $this->reservation->event->start_date->subHours(24)->isFuture();
     }
 
     public function isUsed(): bool

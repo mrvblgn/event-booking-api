@@ -1,0 +1,26 @@
+openapi: 3.0.0
+info:
+  title: Ticket Reservation API
+  version: 1.0.0
+paths:
+  /api/reservations:
+    post:
+      tags:
+        - Reservations
+      summary: Create a new reservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_id:
+                  type: integer
+                seat_ids:
+                  type: array
+                  items:
+                    type: integer
+      responses:
+        201:
+          description: Reservation created successfully 

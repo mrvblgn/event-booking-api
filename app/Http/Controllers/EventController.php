@@ -2,71 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DTOs\Events\Requests\CreateEventRequestDto;
-use App\Models\DTOs\Events\Requests\UpdateEventRequestDto;
+use App\Http\Requests\CreateEventRequest;
+use App\Http\Requests\UpdateEventRequest;
 use App\Services\Abstracts\IEventService;
-use Illuminate\Http\Request;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
 class EventController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private readonly IEventService $eventService
     ) {}
 
     public function index(): JsonResponse
     {
-        $events = $this->eventService->getAllEvents();
-        return response()->json($events);
+        $events = $this->eventService->getEvents();
+        return $this->success($events, 'Events retrieved successfully');
     }
 
     public function show(int $id): JsonResponse
     {
-        $event = $this->eventService->getEventById($id);
-        return response()->json($event);
+        $event = $this->eventService->getEvent($id);
+        return $this->success($event, 'Event retrieved successfully');
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(CreateEventRequest $request): JsonResponse
     {
-        // Request validation yapılacak
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'venue_id' => 'required|exists:venues,id',
-            'start_date' => 'required|date|after:now',
-            'end_date' => 'required|date|after:start_date',
-            'status' => 'sometimes|string|in:draft,published,cancelled'
-        ]);
-
-        $dto = CreateEventRequestDto::fromRequest($request->all());
-        $event = $this->eventService->createEvent($dto);
-
-        return response()->json([
-            'message' => 'Event created successfully',
-            'data' => $event->toArray()
-        ], 201);
+        $event = $this->eventService->createEvent($request->validated());
+        return $this->success($event, 'Event created successfully', 201);
     }
 
-    public function update(int $id, Request $request): JsonResponse
+    public function update(UpdateEventRequest $request, int $id): JsonResponse
     {
-        $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'description' => 'sometimes|string',
-            'venue_id' => 'sometimes|exists:venues,id',
-            'start_date' => 'sometimes|date|after:now',
-            'end_date' => 'sometimes|date|after:start_date',
-            'status' => 'sometimes|string|in:draft,published,cancelled'
-        ]);
-
-        $dto = UpdateEventRequestDto::fromRequest($request->all());
-        $event = $this->eventService->updateEvent($id, $dto);
-
-        return response()->json($event);
+        $event = $this->eventService->updateEvent($id, $request->validated());
+        return $this->success($event, 'Event updated successfully');
     }
 
     public function destroy(int $id): JsonResponse
     {
         $this->eventService->deleteEvent($id);
-        return response()->json(null, 204);
+        return $this->success(null, 'Event deleted successfully');
     }
 } 
