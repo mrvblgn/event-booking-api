@@ -1,66 +1,161 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Event Booking API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Etkinlik biletleme ve rezervasyon sistemi için RESTful API.
 
-## About Laravel
+## 🚀 Özellikler
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Etkinlik yönetimi (CRUD operasyonları)
+- Koltuk rezervasyonu ve biletleme
+- Bilet transfer işlemleri
+- Admin ve kullanıcı rolleri
+- JWT tabanlı kimlik doğrulama
+- Otomatik rezervasyon iptali (süresi dolan rezervasyonlar için)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🛠 Teknolojiler
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.1
+- Laravel 10.x
+- MySQL 8.0
+- JWT Authentication
+- PHPUnit for testing
 
-## Learning Laravel
+## 📋 Gereksinimler
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP >= 8.1
+- Composer
+- MySQL
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## ⚙️ Kurulum
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. Projeyi klonlayın:
 
-## Laravel Sponsors
+```bash
+git clone https://github.com/yourusername/event-booking-api.git
+cd event-booking-api
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+2. Bağımlılıkları yükleyin:
 
-### Premium Partners
+```bash
+composer install
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+3. .env dosyasını oluşturun:
 
-## Contributing
+```bash
+cp .env.example .env
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+4. .env dosyasını düzenleyin:
 
-## Code of Conduct
+```bash
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=event_booking
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5. Uygulama anahtarını oluşturun:
 
-## Security Vulnerabilities
+```bash
+php artisan key:generate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+6. JWT secret key oluşturun:
 
-## License
+```bash
+php artisan jwt:secret
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+7. Veritabanını oluşturun:
+
+```bash
+php artisan migrate --seed
+```
+
+## 🚀 Çalıştırma
+
+```bash
+php artisan serve
+```
+
+API http://localhost:8000 adresinde çalışacaktır.
+
+## 📝 API Dokümantasyonu
+
+API endpoint'leri Postman collection'da detaylı olarak belgelenmiştir. Collection'ı `postman/` klasöründe bulabilirsiniz.
+
+### Temel Endpoint'ler
+
+#### Auth
+- `POST /api/auth/register` - Kayıt olma
+- `POST /api/auth/login` - Giriş yapma
+- `POST /api/auth/logout` - Çıkış yapma
+
+#### Events
+- `GET /api/events` - Etkinlik listesi
+- `POST /api/events` - Etkinlik oluşturma (Admin)
+- `GET /api/events/{id}` - Etkinlik detayı
+
+#### Reservations
+- `POST /api/reservations` - Rezervasyon oluşturma
+- `GET /api/reservations` - Rezervasyon listesi
+- `POST /api/reservations/{id}/confirm` - Rezervasyon onaylama
+
+#### Tickets
+- `GET /api/tickets` - Bilet listesi
+- `POST /api/tickets/transfer` - Bilet transfer etme
+- `GET /api/tickets/{code}/download` - Bilet indirme
+
+
+## 🔑 Test Kullanıcıları
+
+Admin Kullanıcı:
+- Email: admin@example.com
+- Password: password
+
+Normal Kullanıcı:
+- Email: merve@example.com
+- Password: password
+
+## 🧪 Tests
+
+Proje için yazılmış unit testler:
+
+### Event Service Tests
+- ✓ Should create event successfully
+- ✓ Should update event successfully
+- ✓ Should delete event successfully
+- ✓ Should get event with venue
+- ✓ Should throw exception when event not found
+
+### Reservation Service Tests
+- ✓ Should create reservation successfully
+- ✓ Should confirm reservation successfully
+- ✓ Should cancel reservation successfully
+- ✓ Should throw exception when seats not available
+- ✓ Should throw exception when event not found
+- ✓ Should throw exception when reservation expired
+
+### Seat Service Tests
+- ✓ Should block seats successfully
+- ✓ Should release seats successfully
+- ✓ Should throw exception when seats already taken
+
+Testleri çalıştırmak için:
+```bash
+# Tüm testleri çalıştır
+php artisan test
+
+# Belirli bir test sınıfını çalıştır
+php artisan test --filter ReservationServiceTest
+
+# Belirli bir test metodunu çalıştır
+php artisan test --filter ReservationServiceTest::test_should_create_reservation_successfully
+```
+
+
+
+
