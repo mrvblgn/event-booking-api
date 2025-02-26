@@ -6,9 +6,14 @@ use App\Services\Abstracts\IAuthService;
 use App\Models\Entities\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\AuthenticationException;
+use App\Repositories\Abstracts\IAuthRepository;
 
 class AuthService implements IAuthService
 {
+    public function __construct(
+        private readonly IAuthRepository $authRepository
+    ) {}
+
     public function register(array $data): array
     {
         $user = User::create([
@@ -23,13 +28,14 @@ class AuthService implements IAuthService
 
     public function login(array $credentials): string
     {
-        $token = auth()->attempt($credentials);
-        
-        if (!$token) {
-            throw new AuthenticationException('Invalid credentials');
+        try {
+            if (!$token = auth()->attempt($credentials)) {
+                throw new AuthenticationException('Invalid credentials');
+            }
+            return $token;
+        } catch (\Exception $e) {
+            throw new AuthenticationException('Unable to login');
         }
-
-        return $token;
     }
 
     public function refresh(): string

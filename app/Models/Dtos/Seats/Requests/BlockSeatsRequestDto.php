@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\DTOs\Seats\Requests;
+namespace App\Models\Dtos\Seats\Requests;
 
 class BlockSeatsRequestDto
 {

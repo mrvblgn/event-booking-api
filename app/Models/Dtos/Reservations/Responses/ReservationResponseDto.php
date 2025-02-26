@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\DTOs\Reservations\Responses;
+namespace App\Models\Dtos\Reservations\Responses;
 
 use App\Models\Entities\Reservation;
 
@@ -17,13 +17,14 @@ class ReservationResponseDto
     public static function fromEntity(Reservation $reservation): self
     {
         return new self(
+            id: $reservation->id,
             status: $reservation->status,
             total_amount: $reservation->total_amount,
-            expires_at: $reservation->expires_at->format('Y-m-d H:i:s'),
+            expires_at: $reservation->expires_at ? $reservation->expires_at->format('Y-m-d H:i:s') : null,
             seats: $reservation->reservationItems->map(fn($item) => [
                 'row' => $item->seat->row,
                 'number' => $item->seat->number,
-                'section' => $item->section,
+                'section' => $item->seat->section,
                 'price' => $item->price
             ])->toArray(),
             event: [

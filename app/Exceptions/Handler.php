@@ -41,7 +41,7 @@ class Handler extends ExceptionHandler
         $this->renderable(function (AuthenticationException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Unauthorized access'
+                'message' => 'Unauthorized'
             ], 401);
         });
 
@@ -49,7 +49,7 @@ class Handler extends ExceptionHandler
         $this->renderable(function (AuthorizationException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'This action is unauthorized'
+                'message' => 'Forbidden'
             ], 403);
         });
 

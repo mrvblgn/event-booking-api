@@ -1,26 +1,26 @@
 <?php
 
-namespace App\Models\DTOs\Events\Requests;
+namespace App\Models\Dtos\Events\Requests;
 
 class CreateEventRequestDto
 {
     public function __construct(
-        public readonly string $name,
-        public readonly string $description,
-        public readonly int $venue_id,
-        public readonly string $start_date,
-        public readonly string $end_date,
-        public readonly string $status = 'draft'
+        private readonly string $title,
+        private readonly string $description,
+        private readonly int $venue_id,
+        private readonly string $start_time,
+        private readonly string $end_time,
+        private readonly ?string $status = 'draft'
     ) {}
 
     public static function fromRequest(array $data): self
     {
         return new self(
-            name: $data['name'],
+            title: $data['title'],
             description: $data['description'],
             venue_id: $data['venue_id'],
-            start_date: $data['start_date'],
-            end_date: $data['end_date'],
+            start_time: $data['start_time'],
+            end_time: $data['end_time'],
             status: $data['status'] ?? 'draft'
         );
     }
@@ -28,11 +28,11 @@ class CreateEventRequestDto
     public function toArray(): array
     {
         return [
-            'name' => $this->name,
+            'name' => $this->title,
             'description' => $this->description,
             'venue_id' => $this->venue_id,
-            'start_date' => $this->start_date,
-            'end_date' => $this->end_date,
+            'start_date' => $this->start_time,
+            'end_date' => $this->end_time,
             'status' => $this->status
         ];
     }

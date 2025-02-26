@@ -13,6 +13,7 @@ class Seat extends Model
 
     protected $fillable = [
         'venue_id',
+        'event_id',
         'section',
         'row',
         'number',
@@ -41,6 +42,11 @@ class Seat extends Model
     public function reservationItems(): HasMany
     {
         return $this->hasMany(ReservationItem::class);
+    }
+
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
     }
 
     public function isAvailable(): bool

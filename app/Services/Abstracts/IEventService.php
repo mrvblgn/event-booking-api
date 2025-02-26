@@ -2,9 +2,9 @@
 
 namespace App\Services\Abstracts;
 
-use App\Models\DTOs\Events\Requests\CreateEventRequestDto;
-use App\Models\DTOs\Events\Requests\UpdateEventRequestDto;
-use App\Models\DTOs\Events\Responses\EventResponseDto;
+use App\Models\Dtos\Events\Requests\CreateEventRequestDto;
+use App\Models\Dtos\Events\Requests\UpdateEventRequestDto;
+use App\Models\Dtos\Events\Responses\EventResponseDto;
 use Illuminate\Support\Collection;
 
 interface IEventService

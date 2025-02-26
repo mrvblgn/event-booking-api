@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('seats', function (Blueprint $table) {
             $table->id();
             $table->foreignId('venue_id')->constrained()->onDelete('cascade');
+            $table->foreignId('event_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('section');
             $table->string('row');
             $table->string('number');

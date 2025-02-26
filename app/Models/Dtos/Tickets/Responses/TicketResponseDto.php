@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\DTOs\Tickets\Responses;
+namespace App\Models\Dtos\Tickets\Responses;
 
 use App\Models\Entities\Ticket;
 

@@ -2,8 +2,8 @@
 
 namespace App\Services\Concretes;
 
-use App\Models\DTOs\Reservations\Requests\CreateReservationRequestDto;
-use App\Models\DTOs\Reservations\Responses\ReservationResponseDto;
+use App\Models\Dtos\Reservations\Requests\CreateReservationRequestDto;
+use App\Models\Dtos\Reservations\Responses\ReservationResponseDto;
 use App\Models\Entities\Reservation;
 use App\Repositories\Abstracts\IReservationRepository;
 use App\Repositories\Abstracts\ISeatRepository;
@@ -13,64 +13,77 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Auth\Access\AuthorizationException;
+use App\Repositories\Abstracts\IEventRepository;
+use Illuminate\Support\Facades\Cache;
 
 class ReservationService implements IReservationService
 {
     public function __construct(
         private readonly IReservationRepository $reservationRepository,
-        private readonly ISeatRepository $seatRepository
+        private readonly ISeatRepository $seatRepository,
+        private readonly IEventRepository $eventRepository
     ) {}
 
     public function createReservation(CreateReservationRequestDto $dto): ReservationResponseDto
     {
-        try {
-            DB::beginTransaction();
-
-            // Koltukları blokla
-            $success = $this->seatRepository->blockSeats($dto->getSeatIds());
-            if (!$success) {
-                throw new \InvalidArgumentException('Seats are not available');
+        return DB::transaction(function () use ($dto) {
+            // Koltukları kilitle
+            $seats = $this->seatRepository->lockForUpdate()->findMany($dto->getSeatIds());
+            
+            // Müsaitlik kontrolü
+            if ($seats->where('status', '!=', 'available')->isNotEmpty()) {
+                throw new \InvalidArgumentException('Some seats are not available');
             }
 
             // Rezervasyon oluştur
             $reservation = $this->reservationRepository->create([
-                'user_id' => Auth::id(),
+                'user_id' => auth()->id(),
                 'event_id' => $dto->getEventId(),
-                'status' => Reservation::STATUS_PENDING,
-                'expires_at' => now()->addMinutes(15)
+                'status' => Reservation::STATUS_PENDING
             ]);
 
-            // Rezervasyon detaylarını oluştur
-            $items = [];
-            foreach ($dto->getSeatIds() as $seatId) {
-                $seat = $this->seatRepository->findById($seatId);
-                $items[] = [
-                    'seat_id' => $seatId,
-                    'price' => $seat->price
-                ];
-            }
-            
-            $this->reservationRepository->createItems($reservation->id, $items);
+            // Koltukları güncelle
+            $this->seatRepository->updateMany($dto->getSeatIds(), ['status' => 'reserved']);
 
-            DB::commit();
+            // Rezervasyon itemları oluştur
+            foreach ($dto->getSeatIds() as $seatId) {
+                $this->reservationRepository->createItem([
+                    'reservation_id' => $reservation->id,
+                    'seat_id' => $seatId
+                ]);
+            }
+
+            // Cache'i temizle
+            Cache::tags(['events', 'reservations'])->flush();
+            
             return ReservationResponseDto::fromEntity($reservation);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        });
     }
 
     public function getReservations(): Collection
     {
-        $reservations = $this->reservationRepository->getAll(Auth::id());
-        return $reservations->map(fn($reservation) => ReservationResponseDto::fromEntity($reservation));
+        $userId = Auth::id();
+        return Cache::remember("reservations.user.{$userId}", 1800, function () {
+            return $this->reservationRepository->getAllWith([
+                'event', 
+                'event.venue',
+                'reservationItems',
+                'reservationItems.seat'
+            ]);
+        });
     }
 
     public function getReservation(int $id): ReservationResponseDto
     {
-        $reservation = $this->reservationRepository->findById($id);
+        $reservation = $this->reservationRepository->findWith($id, [
+            'event',
+            'event.venue',
+            'reservationItems',
+            'reservationItems.seat'
+        ]);
+
         if (!$reservation || $reservation->user_id !== Auth::id()) {
-            throw new \InvalidArgumentException('Reservation not found');
+            throw new ModelNotFoundException('Reservation not found');
         }
 
         return ReservationResponseDto::fromEntity($reservation);

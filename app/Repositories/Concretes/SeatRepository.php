@@ -5,14 +5,35 @@ namespace App\Repositories\Concretes;
 use App\Models\Entities\Seat;
 use App\Repositories\Abstracts\ISeatRepository;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class SeatRepository implements ISeatRepository
 {
     public function getEventSeats(int $eventId): Collection
     {
-        return Seat::whereHas('tickets', function ($query) use ($eventId) {
-            $query->where('event_id', $eventId);
-        })->get();
+        $seats = Seat::where('event_id', $eventId)
+            ->with(['venue'])  // İlişkili verileri de alalım
+            ->get()
+            ->map(function ($seat) {
+                return [
+                    'id' => $seat->id,
+                    'section' => $seat->section,
+                    'row' => $seat->row,
+                    'number' => $seat->number,
+                    'price' => $seat->price,
+                    'status' => $seat->status,
+                    'venue' => $seat->venue ? [
+                        'id' => $seat->venue->id,
+                        'name' => $seat->venue->name
+                    ] : null
+                ];
+            });
+
+        if ($seats->isEmpty()) {
+            throw new ModelNotFoundException('No seats found for this event');
+        }
+
+        return $seats;
     }
 
     public function getVenueSeats(int $venueId): Collection

@@ -2,8 +2,8 @@
 
 namespace App\Services\Abstracts;
 
-use App\Models\DTOs\Reservations\Requests\CreateReservationRequestDto;
-use App\Models\DTOs\Reservations\Responses\ReservationResponseDto;
+use App\Models\Dtos\Reservations\Requests\CreateReservationRequestDto;
+use App\Models\Dtos\Reservations\Responses\ReservationResponseDto;
 use Illuminate\Support\Collection;
 
 interface IReservationService

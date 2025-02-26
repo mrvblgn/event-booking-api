@@ -1,25 +1,27 @@
 <?php
 
-namespace App\Models\DTOs\Seats\Responses;
+namespace App\Models\Dtos\Seats\Responses;
 
 use App\Models\Entities\Seat;
 
 class SeatResponseDto
 {
     public function __construct(
-        public readonly string $row,
-        public readonly int $number,
-        public readonly string $section,
-        public readonly float $price,
-        public readonly string $status
+        private readonly int $id,
+        private readonly string $section,
+        private readonly string $row,
+        private readonly string $number,
+        private readonly float $price,
+        private readonly string $status
     ) {}
 
     public static function fromEntity(Seat $seat): self
     {
         return new self(
+            id: $seat->id,
+            section: $seat->section,
             row: $seat->row,
             number: $seat->number,
-            section: $seat->section,
             price: $seat->price,
             status: $seat->status
         );
@@ -28,9 +30,10 @@ class SeatResponseDto
     public function toArray(): array
     {
         return [
+            'id' => $this->id,
+            'section' => $this->section,
             'row' => $this->row,
             'number' => $this->number,
-            'section' => $this->section,
             'price' => $this->price,
             'status' => $this->status
         ];

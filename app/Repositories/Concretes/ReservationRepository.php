@@ -6,6 +6,7 @@ use App\Models\Entities\Reservation;
 use App\Models\Entities\ReservationItem;
 use App\Repositories\Abstracts\IReservationRepository;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class ReservationRepository implements IReservationRepository
 {
@@ -60,5 +61,17 @@ class ReservationRepository implements IReservationRepository
     {
         return Reservation::where('id', $id)
             ->update(['status' => $status]) > 0;
+    }
+
+    public function getAllWith(array $relations = []): Collection
+    {
+        return Reservation::with($relations)
+            ->where('user_id', Auth::id())
+            ->get();
+    }
+
+    public function findWith(int $id, array $relations = []): ?Reservation
+    {
+        return Reservation::with($relations)->find($id);
     }
 } 

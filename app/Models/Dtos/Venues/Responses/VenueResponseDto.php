@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\DTOs\Venues\Responses;
+namespace App\Models\Dtos\Venues\Responses;
 
 use App\Models\Entities\Venue;
 

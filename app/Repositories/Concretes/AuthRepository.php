@@ -3,7 +3,7 @@
 namespace App\Repositories\Concretes;
 
 use App\Models\Entities\User;
-use App\Repositories\Interfaces\IAuthRepository;
+use App\Repositories\Abstracts\IAuthRepository;
 use Illuminate\Support\Facades\Hash;
 
 class AuthRepository implements IAuthRepository

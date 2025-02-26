@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\DTOs\Auth\Requests;
+namespace App\Models\Dtos\Auth\Requests;
 
 class RegisterRequestDto
 {

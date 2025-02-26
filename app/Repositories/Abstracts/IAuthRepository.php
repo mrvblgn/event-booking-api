@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Interfaces;
+namespace App\Repositories\Abstracts;
 
 use App\Models\Entities\User;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\DTOs\Auth\Responses;
+namespace App\Models\Dtos\Auth\Responses;
 
 class TokenResponseDto
 {

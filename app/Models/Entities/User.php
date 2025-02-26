@@ -6,13 +6,12 @@ namespace App\Models\Entities;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use PHPOpenSourcesaver\JWTAuth\Contracts\JWTSubject;
-use Laravel\Sanctum\HasApiTokens;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -23,6 +22,7 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'is_admin'
     ];
 
     /**
@@ -43,6 +43,7 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_admin' => 'boolean'
     ];
 
     public function getJWTIdentifier()
@@ -54,5 +55,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
-    
+
+    public function getIsAdminAttribute(): bool
+    {
+        return $this->role === 'admin';
+    }
 }

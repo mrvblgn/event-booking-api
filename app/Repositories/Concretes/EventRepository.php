@@ -31,7 +31,7 @@ class EventRepository implements IEventRepository
 
     public function findWithVenue(int $id): ?Event
     {
-        return Event::with('venue')->find($id);
+        return Event::with(['venue', 'seats'])->find($id);
     }
 
     public function all(): Collection
@@ -41,11 +41,21 @@ class EventRepository implements IEventRepository
 
     public function allWithVenue(): Collection
     {
-        return Event::with('venue')->get();
+        return Event::with(['venue'])->get();
     }
 
     public function findByVenue(int $venueId): Collection
     {
         return Event::where('venue_id', $venueId)->get();
+    }
+
+    public function getAllWith(array $relations = []): Collection
+    {
+        return Event::with($relations)->get();
+    }
+
+    public function findWith(int $id, array $relations = []): ?Event
+    {
+        return Event::with($relations)->find($id);
     }
 } 

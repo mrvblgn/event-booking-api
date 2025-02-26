@@ -1,75 +1,52 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SeatController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\TicketController;
 
-// Event routes
-Route::prefix('events')->group(function () {
-    Route::get('/', [EventController::class, 'index']);
-    Route::get('/{id}', [EventController::class, 'show']);
-    Route::get('/{id}/seats', [SeatController::class, 'getEventSeats']);
-    
-    Route::middleware(['auth:api', 'admin'])->group(function () {
-        Route::post('/', [EventController::class, 'store']);
-        Route::put('/{id}', [EventController::class, 'update']);
-        Route::delete('/{id}', [EventController::class, 'destroy']);
-    });
+// Public routes with rate limiting
+Route::middleware(['throttle:60,1'])->group(function () {
+    Route::get('/events', [EventController::class, 'index']);
+    Route::get('/events/{id}', [EventController::class, 'show']);
+    Route::get('/events/{id}/seats', [SeatController::class, 'getEventSeats']);
+    Route::get('/venues/{id}/seats', [SeatController::class, 'getVenueSeats']);
 });
 
-// Venue routes
-Route::prefix('venues')->group(function () {
-    Route::get('/{id}/seats', [SeatController::class, 'getVenueSeats']);
+// Auth routes with stricter rate limiting
+Route::middleware(['throttle:30,1'])->group(function () {
+    Route::post('/auth/login', [AuthController::class, 'login']);
+    Route::post('/auth/register', [AuthController::class, 'register']);
 });
 
-// Auth routes
-Route::prefix('auth')->group(function () {
-    Route::post('register', [AuthController::class, 'register']);
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('refresh', [AuthController::class, 'refresh'])->middleware('auth:api');
-    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:api');
+// Protected routes with admin middleware
+Route::middleware(['auth:api', 'admin'])->group(function () {
+    Route::post('/events', [EventController::class, 'store']);
+    Route::put('/events/{id}', [EventController::class, 'update']);
+    Route::delete('/events/{id}', [EventController::class, 'destroy']);
 });
 
 // Protected routes
-Route::middleware('auth:api')->group(function () {
-    // Seat routes
-    Route::prefix('seats')->group(function () {
-        Route::post('/block', [SeatController::class, 'blockSeats']);
-        Route::delete('/release', [SeatController::class, 'releaseSeats']);
-    });
-
-    // Reservation routes
-    Route::prefix('reservations')->group(function () {
-        Route::post('/', [ReservationController::class, 'store']);
-        Route::get('/', [ReservationController::class, 'index']);
-        Route::get('/{id}', [ReservationController::class, 'show']);
-        Route::post('/{id}/confirm', [ReservationController::class, 'confirm']);
-        Route::delete('/{id}', [ReservationController::class, 'destroy']);
-    });
-
-    // Ticket routes
-    Route::prefix('tickets')->group(function () {
-        Route::get('/', [TicketController::class, 'index']);
-        Route::get('/{id}', [TicketController::class, 'show']);
-        Route::get('/{id}/download', [TicketController::class, 'download']);
-        Route::post('/{id}/transfer', [TicketController::class, 'transfer']);
-    });
+Route::middleware(['auth:api'])->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/refresh', [AuthController::class, 'refresh']);
+    
+    // Seat management
+    Route::post('/seats/block', [SeatController::class, 'blockSeats']);
+    Route::delete('/seats/release', [SeatController::class, 'releaseSeats']);
+    
+    // Reservations
+    Route::get('/reservations', [ReservationController::class, 'index']);
+    Route::post('/reservations', [ReservationController::class, 'store']);
+    Route::get('/reservations/{id}', [ReservationController::class, 'show']);
+    Route::post('/reservations/{id}/confirm', [ReservationController::class, 'confirm']);
+    Route::delete('/reservations/{id}', [ReservationController::class, 'destroy']);
+    
+    // Tickets
+    Route::get('/tickets', [TicketController::class, 'index']);
+    Route::get('/tickets/{id}', [TicketController::class, 'show']);
+    Route::get('/tickets/{id}/download', [TicketController::class, 'download']);
+    Route::post('/tickets/{id}/transfer', [TicketController::class, 'transfer']);
 });
-
-// Genel API rate limit
-Route::middleware(['auth:api', 'throttle:api'])->group(function () {
-    // Normal routes...
-});
-
-// Auth işlemleri için özel limit
-Route::middleware('throttle:auth')->group(function () {
-    Route::post('login', [AuthController::class, 'login']);
-    Route::post('register', [AuthController::class, 'register']);
-});
-
-// Bilet işlemleri için özel limit
-Route::middleware(['auth:api', 'throttle:tickets'])->group(function () {
-    Route::prefix('tickets')->group(function () {
-        // Ticket routes...
-    });
-}); 

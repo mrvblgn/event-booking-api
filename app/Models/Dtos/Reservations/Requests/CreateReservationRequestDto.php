@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\DTOs\Reservations\Requests;
+namespace App\Models\Dtos\Reservations\Requests;
 
 class CreateReservationRequestDto
 {

@@ -2,8 +2,8 @@
 
 namespace App\Services\Concretes;
 
-use App\Models\DTOs\Tickets\Requests\TransferTicketRequestDto;
-use App\Models\DTOs\Tickets\Responses\TicketResponseDto;
+use App\Models\Dtos\Tickets\Requests\TransferTicketRequestDto;
+use App\Models\Dtos\Tickets\Responses\TicketResponseDto;
 use App\Repositories\Abstracts\ITicketRepository;
 use App\Services\Abstracts\ITicketService;
 use Illuminate\Support\Collection;
@@ -20,8 +20,7 @@ class TicketService implements ITicketService
 
     public function getUserTickets(): Collection
     {
-        $tickets = $this->ticketRepository->getUserTickets(Auth::id());
-        return $tickets->map(fn($ticket) => TicketResponseDto::fromEntity($ticket));
+        return $this->ticketRepository->getUserTickets(auth()->id());
     }
 
     public function getTicket(string $ticketCode): TicketResponseDto
@@ -30,27 +29,22 @@ class TicketService implements ITicketService
         if (!$ticket || $ticket->reservation->user_id !== Auth::id()) {
             throw new \InvalidArgumentException('Ticket not found');
         }
-
         return TicketResponseDto::fromEntity($ticket);
     }
 
-    public function transferTicket(TransferTicketRequestDto $dto): void
+    public function transferTicket(TransferTicketRequestDto $dto): bool
     {
-        $ticket = $this->ticketRepository->findByCode($dto->getCode());
-        
-        if (!$ticket) {
-            throw new ModelNotFoundException('Ticket not found');
-        }
+        try {
+            $ticket = $this->ticketRepository->findByCode($dto->getCode());
+            
+            if (!$ticket->canBeTransferred()) {
+                throw new \Exception('Ticket cannot be transferred');
+            }
 
-        if ($ticket->reservation->user_id !== Auth::id()) {
-            throw new AuthorizationException('You are not authorized to transfer this ticket');
+            return $this->ticketRepository->transferTicket($ticket, $dto->getEmail());
+        } catch (ModelNotFoundException $e) {
+            throw new \Exception('Ticket not found');
         }
-
-        if (!$ticket->canBeTransferred()) {
-            throw new \InvalidArgumentException('Ticket cannot be transferred');
-        }
-
-        // Transfer işlemi...
     }
 
     public function cancelTicket(string $ticketCode): bool
@@ -59,11 +53,9 @@ class TicketService implements ITicketService
         if (!$ticket || $ticket->reservation->user_id !== Auth::id()) {
             throw new \InvalidArgumentException('Ticket not found');
         }
-
         if (!$ticket->canBeCancelled()) {
             throw new \InvalidArgumentException('Ticket cannot be cancelled');
         }
-
         return $this->ticketRepository->cancel($ticketCode);
     }
 
@@ -73,11 +65,6 @@ class TicketService implements ITicketService
         if (!$ticket || $ticket->reservation->user_id !== Auth::id()) {
             throw new \InvalidArgumentException('Ticket not found');
         }
-        
-        $pdf = PDF::loadView('tickets.pdf', [
-            'ticket' => TicketResponseDto::fromEntity($ticket)
-        ]);
-
-        return $pdf->output();
+        return "ticket_{$ticketCode}.pdf";
     }
 } 

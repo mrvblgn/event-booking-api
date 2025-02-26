@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\DTOs\Events\Requests;
+namespace App\Models\Dtos\Events\Requests;
 
 class UpdateEventRequestDto
 {

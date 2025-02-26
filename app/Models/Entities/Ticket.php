@@ -9,10 +9,17 @@ use Illuminate\Support\Str;
 class Ticket extends Model
 {
     protected $fillable = [
-        'reservation_id',
+        'user_id',
+        'event_id',
         'seat_id',
-        'ticket_code',
-        'status'
+        'reservation_id',
+        'price',
+        'status',
+        'code'
+    ];
+
+    protected $casts = [
+        'price' => 'decimal:2'
     ];
 
     public const STATUS_ACTIVE = 'active';
@@ -29,14 +36,24 @@ class Ticket extends Model
         });
     }
 
-    public function reservation(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Reservation::class);
+        return $this->belongsTo(User::class);
+    }
+
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
     }
 
     public function seat(): BelongsTo
     {
         return $this->belongsTo(Seat::class);
+    }
+
+    public function reservation(): BelongsTo
+    {
+        return $this->belongsTo(Reservation::class);
     }
 
     public function canBeTransferred(): bool

@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('venues', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->text('address');
-            $table->integer('capacity');
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->boolean('is_admin')->default(false);
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('venues');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('is_admin');
+        });
     }
 };

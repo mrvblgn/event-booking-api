@@ -14,6 +14,7 @@ class TransferTicketRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'ticket_code' => 'required|string|exists:tickets,ticket_code',
             'email' => 'required|email|exists:users,email'
         ];
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\DTOs\Tickets\Requests;
+namespace App\Models\Dtos\Tickets\Requests;
 
 class TransferTicketRequestDto
 {
@@ -8,15 +8,15 @@ class TransferTicketRequestDto
      * @param string $code Bilet kodu
      * @param string $email Transfer edilecek kullanıcının email adresi
      */
-    public function __construct(
-        public readonly string $code,
-        public readonly string $email
+    private function __construct(
+        private readonly string $code,
+        private readonly string $email
     ) {}
 
     public static function fromRequest(array $data): self
     {
         return new self(
-            code: $data['code'],
+            code: $data['ticket_code'],
             email: $data['email']
         );
     }

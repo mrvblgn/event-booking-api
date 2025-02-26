@@ -7,6 +7,7 @@ use App\Http\Requests\ReleaseSeatsRequest;
 use App\Services\Abstracts\ISeatService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class SeatController extends Controller
 {
@@ -16,22 +17,43 @@ class SeatController extends Controller
         private readonly ISeatService $seatService
     ) {}
 
-    public function getEventSeats(int $eventId): JsonResponse
+    public function getEventSeats(int $id): JsonResponse
     {
-        $seats = $this->seatService->getEventSeats($eventId);
-        return $this->success($seats, 'Event seats retrieved successfully');
+        try {
+            $seats = $this->seatService->getEventSeats($id);
+            return $this->success([
+                'status' => 'success',
+                'message' => 'Event seats retrieved successfully',
+                'data' => $seats
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return $this->error('Event not found', 404);
+        }
     }
 
-    public function getVenueSeats(int $venueId): JsonResponse
+    public function getVenueSeats(int $id): JsonResponse
     {
-        $seats = $this->seatService->getVenueSeats($venueId);
-        return $this->success($seats, 'Venue seats retrieved successfully');
+        try {
+            $seats = $this->seatService->getVenueSeats($id);
+            return $this->success($seats, 'Venue seats retrieved successfully');
+        } catch (ModelNotFoundException $e) {
+            return $this->error('Venue not found', 404);
+        }
     }
 
     public function blockSeats(BlockSeatsRequest $request): JsonResponse
     {
-        $this->seatService->blockSeats($request->validated()['seat_ids']);
-        return $this->success(null, 'Seats blocked successfully');
+        try {
+            $result = $this->seatService->blockSeats($request->validated()['seat_ids']);
+            
+            return $this->success([
+                'status' => 'success',
+                'message' => 'Seats blocked successfully',
+                'data' => $result
+            ]);
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), 400);
+        }
     }
 
     public function releaseSeats(ReleaseSeatsRequest $request): JsonResponse

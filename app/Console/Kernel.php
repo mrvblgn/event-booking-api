@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use App\Jobs\ReleaseExpiredReservations;
 
 class Kernel extends ConsoleKernel
 {
@@ -17,7 +18,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('reservations:cancel-expired')->everyMinute();
+        $schedule->job(new ReleaseExpiredReservations)->everyMinute();
     }
 
     /**

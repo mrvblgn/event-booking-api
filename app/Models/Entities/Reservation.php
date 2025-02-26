@@ -28,6 +28,11 @@ class Reservation extends Model
     public const STATUS_CONFIRMED = 'confirmed';
     public const STATUS_CANCELLED = 'cancelled';
 
+    public function items(): HasMany
+    {
+        return $this->hasMany(ReservationItem::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -36,11 +41,6 @@ class Reservation extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
-    }
-
-    public function reservationItems(): HasMany
-    {
-        return $this->hasMany(ReservationItem::class);
     }
 
     public function tickets(): HasMany

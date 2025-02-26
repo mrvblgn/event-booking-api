@@ -5,23 +5,22 @@ namespace App\Repositories\Concretes;
 use App\Models\Entities\Ticket;
 use App\Repositories\Abstracts\ITicketRepository;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class TicketRepository implements ITicketRepository
 {
-    public function findByCode(string $ticketCode): ?Ticket
+    public function findByCode(string $code): ?Ticket
     {
-        return Ticket::with(['reservation.event.venue', 'reservation.user', 'seat'])
-            ->where('ticket_code', $ticketCode)
-            ->first();
+        return Ticket::where('ticket_code', $code)
+            ->with(['reservation', 'event', 'seat'])
+            ->firstOrFail();
     }
 
     public function getUserTickets(int $userId): Collection
     {
-        return Ticket::with(['reservation.event.venue', 'seat'])
-            ->whereHas('reservation', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            })
-            ->get();
+        return Ticket::whereHas('reservation', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->get();
     }
 
     public function transfer(string $ticketCode, int $newUserId): bool
@@ -57,5 +56,14 @@ class TicketRepository implements ITicketRepository
                 'status' => Ticket::STATUS_ACTIVE
             ]);
         }
+    }
+
+    public function transferTicket(Ticket $ticket, string $email): bool
+    {
+        $newUser = User::where('email', $email)->firstOrFail();
+        
+        return $ticket->reservation->update([
+            'user_id' => $newUser->id
+        ]);
     }
 } 

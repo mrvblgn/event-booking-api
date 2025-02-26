@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Services\Interfaces;
+namespace App\Services\Abstracts;
 
-use App\Models\DTOs\Auth\Requests\RegisterRequestDto;
-use App\Models\DTOs\Auth\Responses\AuthResponseDto;
+use App\Models\Dtos\Auth\Requests\RegisterRequestDto;
+use App\Models\Dtos\Auth\Responses\AuthResponseDto;
 
 interface IAuthService
 {
-    public function register(RegisterRequestDto $dto): AuthResponseDto;
-    public function login(string $email, string $password): AuthResponseDto;
+    public function register(array $data): array;
+    public function login(array $credentials): string;
     public function logout(): void;
-    public function refresh(): AuthResponseDto;
-} 
+    public function refresh(): string;
+}

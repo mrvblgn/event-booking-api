@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\DTOs\Venues\Requests;
+namespace App\Models\Dtos\Venues\Requests;
 
 class CreateVenueRequestDto
 {
